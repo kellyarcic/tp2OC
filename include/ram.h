@@ -4,7 +4,6 @@
 
 #include "bloco.h"
 
-// Estrutura atualizada da RAM para conter blocos em vez de inteiros simples
 typedef struct {
     BlocoMemoria *blocos;
     int tamanhoEmBlocos;

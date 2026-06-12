@@ -4,14 +4,13 @@
 #include "bloco.h"
 #include "ram.h"
 
-// Estrutura da Unidade de Gerenciamento de Memória (MMU)
 typedef struct {
     BlocoMemoria* c1; // Cache L1
     BlocoMemoria* c2; // Cache L2
     BlocoMemoria* c3; // Cache L3
     int tamC1, tamC2, tamC3;
 
-    // Contadores para estatísticas e relatório tabular
+    // Contadores para estatisticas
     int hitsC1, missesC1;
     int hitsC2, missesC2;
     int hitsC3, missesC3;

@@ -5,7 +5,6 @@
 #include "ram.h"
 #include "mmu.h"
 
-// Mantém a estrutura base do seu TP1, adicionando controle de instruções
 typedef struct {
     int registrador1;
     int registrador2;

@@ -9,7 +9,7 @@
 Instrucao* gerarProgramaSimulado(int qtdInstrucoes, double taxaRepeticao, int *tamPrograma) {
     Instrucao *programa = (Instrucao*) malloc(sizeof(Instrucao) * qtdInstrucoes);
     
-    // Conjunto de endereços "populares" para simular a repetição (Princípio da Localidade)
+    // Conjunto de endereços "populares" para simular a repetição
     int enderecosComuns[10] = {4, 8, 12, 16, 20, 24, 28, 32, 36, 40};
     
     for (int i = 0; i < qtdInstrucoes - 1; i++) {
@@ -23,7 +23,7 @@ Instrucao* gerarProgramaSimulado(int qtdInstrucoes, double taxaRepeticao, int *t
             add2 = enderecosComuns[rand() % 10];
             add3 = enderecosComuns[rand() % 10];
         } else {
-            // Sorteia um endereço qualquer na RAM (até 200 para gerar mais misses)
+            // Sorteia um endereço qualquer na RAM
             add1 = (rand() % 50) * 4;
             add2 = (rand() % 50) * 4;
             add3 = (rand() % 50) * 4;
@@ -83,7 +83,6 @@ void rodarSimulacao(double taxaRepeticao, const char* nomeJanela) {
 int main() {
     srand(time(NULL)); // Inicializa a semente aleatória
 
-    // Roda os três cenários exigidos no roteiro do professor!
     rodarSimulacao(0.50, "50%% DE REPETICAO");
     rodarSimulacao(0.75, "75%% DE REPETICAO");
     rodarSimulacao(0.90, "90%% DE REPETICAO");
