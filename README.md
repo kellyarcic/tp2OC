@@ -1,27 +1,27 @@
-# Trabalho Prático 2 da disciplina BCC266.
+# Simulador de CPU com Hierarquia de Memória Cache (TP2)
+
+Este projeto foi desenvolvido como o Trabalho Prático 2 da disciplina **BCC266 - Organização de Computadores** da Universidade Federal de Ouro Preto (UFOP). O objetivo é estender a CPU desenvolvida no TP1, adicionando uma hierarquia de memória cache gerenciada por uma Unidade de Controle de Memória (UCM/MMU).
 
 ## 🎯 Objetivo
-
-O projeto consiste na extensão do simulador de CPU desenvolvido no TP1, adicionando uma hierarquia de memória cache em 3 níveis (C1, C2 e C3) intermediando o fluxo de dados entre o processador e a Memória RAM.Todo o acesso ao sistema de memória é centralizado e gerenciado de forma transparente por uma **UCM (Unidade de Controle de Memória)**.
+O simulador intercepta as instruções geradas pelo pipeline da CPU e gerencia o fluxo de dados através de 3 níveis de memória cache (C1, C2 e C3) antes de acessar a Memória RAM, visando analisar o impacto do custo de acesso e as taxas de acerto (*hits*).
 
 ## 🛠️ Especificações do Hardware
-
 * **Mapeamento de Cache:** Mapeamento Associativo Puro.
-* **Política de Substituição:** LFU (*Least Frequently Used* - Menos Frequentemente Utilizado).
-* **Política de Escrita:** Write-Through (Atualização síncrona entre cache e memória principal).
-* **Organização da Memória:** Memórias estruturadas em blocos/linhas contendo 4 palavras (inteiros) cada.
+* **Política de Substituição:** LRU (*Least Recently Used* - Menos Recentemente Utilizado).
+* **Política de Escrita:** Write-Back (Escrita postergada com uso de bit de modificação/Dirty Bit).
+* **Organização da Memória:** Estruturada em blocos/linhas contendo 4 palavras (inteiros) cada.
 
 ## 📂 Estrutura do Projeto
-
-O projeto adota uma estrutura modular separando cabeçalhos e códigos-fonte:
-
-* `include/`: Arquivos de cabeçalho (`.h`) contendo as definições das estruturas da CPU, RAM, Blocos de Memória e UCM.
-* `src/`: Implementação dos códigos-fonte (`.c`), incluindo o pipeline da máquina interpretada e a lógica de busca/substituição de blocos.
-
-## 🚀 Como Compilar e Executar
-
-Como o projeto está dividido em pastas, utilize o comando abaixo dentro do diretório raiz para compilar todos os arquivos corretamente:
-
-```bash
-gcc src/*.c -I include -o tp2
-./tp2
+```text
+├── include/       # Arquivos de cabeçalho (.h)
+│   ├── bloco.h
+│   ├── cpu.h
+│   ├── instrucao.h
+│   ├── mmu.h
+│   └── ram.h
+├── src/           # Implementação dos códigos-fonte (.c)
+│   ├── cpu.c
+│   ├── main.c
+│   ├── mmu.c
+│   └── ram.c
+└── README.md      # Documentação do projeto
