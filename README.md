@@ -25,3 +25,17 @@ O simulador intercepta as instruções geradas pelo pipeline da CPU e gerencia o
 │   ├── mmu.c
 │   └── ram.c
 └── README.md      # Documentação do projeto
+
+### 📤 Como subir as atualizações pro GitHub
+
+Depois de salvar as alterações nesses arquivos, roda essa sequência clássica no seu terminal para deixar o Git atualizadinho:
+
+```bash
+git add .
+git commit -m "Ajuste: Altera politicas de cache para LRU e Write-Back e atualiza README"
+git push origin main
+
+## 🚀 Como Compilar e Executar
+
+gcc src/*.c -I include -o tp2
+./tp2
