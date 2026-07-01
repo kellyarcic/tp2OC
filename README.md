@@ -11,21 +11,23 @@ O simulador intercepta as instruções geradas pelo pipeline da CPU e gerencia o
 * **Política de Escrita:** Write-Back (Escrita postergada com uso de bit de modificação/Dirty Bit).
 * **Organização da Memória:** Estruturada em blocos/linhas contendo 4 palavras (inteiros) cada.
 
-## 📂 Estrutura do Projeto
+## 📁 Estrutura do Projeto
+
 ```text
-├── include/       # Arquivos de cabeçalho (.h)
+├── include/               # Arquivos de cabeçalho (.h)
 │   ├── bloco.h
 │   ├── cpu.h
 │   ├── instrucao.h
 │   ├── mmu.h
 │   └── ram.h
-├── src/           # Implementação dos códigos-fonte (.c)
+├── src/                   # Implementação dos códigos-fonte (.c)
 │   ├── cpu.c
 │   ├── main.c
 │   ├── mmu.c
 │   └── ram.c
-└── README.md      # Documentação do projeto
-
+├── instructionsGenerator.c # Código do gerador de instruções oficial
+├── instructions2.txt      # Arquivo de texto com as instruções geradas
+└── README.md              # Documentação do projeto
 ### 📤 Como subir as atualizações pro GitHub
 
 Depois de salvar as alterações nesses arquivos, roda essa sequência clássica no seu terminal para deixar o Git atualizadinho:
@@ -37,5 +39,5 @@ git push origin main
 
 ## 🚀 Como Compilar e Executar
 
-gcc src/*.c -I include -o tp2
+gcc src/main.c src/mmu.c src/ram.c src/cpu.c -I include -o tp2
 ./tp2
