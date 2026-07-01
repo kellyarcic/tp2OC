@@ -59,6 +59,7 @@ Abaixo estão consolidadas as métricas obtidas na execução do programa de tes
 ├── instructionsGenerator.c # Código do gerador de instruções oficial
 ├── instructions2.txt      # Arquivo de texto com as instruções geradas
 └── README.md              # Documentação do projeto
+
 ### 📤 Como subir as atualizações pro GitHub
 
 Depois de salvar as alterações nesses arquivos, roda essa sequência clássica no seu terminal para deixar o Git atualizadinho:
