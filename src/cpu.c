@@ -57,26 +57,7 @@ void executarCPU(CPU *cpu, RAM *ram, MMU *mmu){
                 }
                 printf("\n[MOV RAM -> REG]\n");
                 break;
-
-            case 4: // LOAD
-                if(atual.add1 == 1){
-                    cpu->registrador1 = atual.add2;
-                }
-                else{
-                    cpu->registrador2 = atual.add2;
-                }
-                printf("\n[LOAD]\n");
-                break;
-
-            case 5: // COPY
-                if(atual.add1 == 1){
-                    cpu->programa[cpu->pc].add2 = cpu->registrador1;
-                }
-                else{
-                    cpu->programa[cpu->pc].add2 = cpu->registrador2;
-                }
-                printf("\n[COPY]\n");
-                break;
+                
             default:
                 printf("\nOpcode invalido.\n");
                 break;

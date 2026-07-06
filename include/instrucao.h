@@ -1,28 +1,19 @@
 #ifndef INSTRUCAO_H
 #define INSTRUCAO_H
 
+typedef enum{
+    HALT = -1,
+    SUM = 0,
+    SUB = 1,
+    MOV_REG_RAM = 2,
+    MOV_RAM_REG = 3
+} Opcode;
+
 typedef struct {
-    int opcode;
-    int add1;//onde pegar o primeiro numero
-    int add2;//onde pegar o segundo numero
-    int add3;//onde salvar
+    Opcode opcode;
+    int add1;
+    int add2;
+    int add3;
 } Instrucao;
-
-//encerra o programa
-#define HALT -1
-
-//operacoes basicas
-#define SUM 0
-#define SUB 1
-
-//movimentacao
-#define MOV_REG_RAM 2
-#define MOV_RAM_REG 3
-
-//carregamento externo
-#define LOAD 4
-
-//copia registrador
-#define COPY 5
 
 #endif

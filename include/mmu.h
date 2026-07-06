@@ -23,6 +23,6 @@ typedef struct {
 MMU* inicializarMMU(int t1, int t2, int t3);
 void liberarMMU(MMU* mmu);
 int buscarNasMemorias(MMU* mmu, int enderecoGlobal, bool isEscrita, int valorEscrita, RAM* ram);
-void imprimirEstatisticas(MMU* mmu);
+void imprimirEstatisticas(MMU* mmu, int maquina);
 
 #endif

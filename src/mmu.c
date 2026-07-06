@@ -1,4 +1,5 @@
 #include "../include/mmu.h"
+#include "../include/config.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -49,7 +50,7 @@ static void copiarBloco(BlocoMemoria* origem, BlocoMemoria* destino) {
 }
 
 //insere um bloco na cache aplicando as regras de LRU e White back
-static void levarParaCache(BlocoMemoria* cache, int tamanho, BlocoMemoria* blocoSubindo, BlocoMemoria* ram, unsigned long long relogio) {
+static void levarParaCache(BlocoMemoria* cache, int tamanho, BlocoMemoria* blocoSubindo, BlocoMemoria* ram, unsigned long long relogio, const char *nomeCache) {
     int idx = buscarNaCache(cache, tamanho, blocoSubindo->endBloco); //linha onde um elemento foi encontrado
     if(idx != -1) {
         cache[idx].contadorUso = relogio;
@@ -73,84 +74,90 @@ static void levarParaCache(BlocoMemoria* cache, int tamanho, BlocoMemoria* bloco
             lruIdx = i;//guarda o indice que sera expulsa
         }
     }
+    printf("[LRU] %s cheia! Removendo bloco %d.\n",nomeCache, cache[lruIdx].endBloco);
+
     //WRITE-BACK
     //teste antes de jogar no lixo
     if(cache[lruIdx].atualizado && cache[lruIdx].endBloco != -1) {
         copiarBloco(&cache[lruIdx], &ram[cache[lruIdx].endBloco]); //salva de volta na RAM antes de joga-la fora
         ram[cache[lruIdx].endBloco].atualizado = false;
     }
-    
+
+    printf("[WRITE-BACK] Gravando bloco %d da %s na RAM.\n",cache[lruIdx].endBloco, nomeCache);
+
     copiarBloco(blocoSubindo, &cache[lruIdx]);
     cache[lruIdx].contadorUso = relogio;
+}
+
+static int tratarHitCache(BlocoMemoria *cache,int idx,int offset,bool isEscrita,int valorEscrita,int *hits,int custo,MMU *mmu) {
+    (*hits)++;
+    mmu->custoTotal += custo;
+    cache[idx].contadorUso = mmu->relogioLRU;
+
+    if (isEscrita) {
+        cache[idx].palavras[offset] = valorEscrita;
+        cache[idx].atualizado = true;
+    }
+
+    return cache[idx].palavras[offset];
 }
 
 //busca em cascatas
 int buscarNasMemorias(MMU* mmu, int enderecoGlobal, bool isEscrita, int valorEscrita, RAM* ram) {
     int endBloco = enderecoGlobal / 4;
     int offset = enderecoGlobal % 4;
+    int idx;
+
     mmu->relogioLRU++;
     
     // C1
-    int idx = buscarNaCache(mmu->c1, mmu->tamC1, endBloco);
-    if(idx != -1) { //cache hit na c1
-        mmu->hitsC1++; mmu->custoTotal += 1;
-        mmu->c1[idx].contadorUso = mmu->relogioLRU;
-        // Se for uma instrucao de escrita (MOV), altera o dado apenas na C1 
-        if(isEscrita) {
-            mmu->c1[idx].palavras[offset] = valorEscrita; 
-            mmu->c1[idx].atualizado = true; }
-        return mmu->c1[idx].palavras[offset];//retorn a palavra para a cpu
+    idx = buscarNaCache(mmu->c1, mmu->tamC1, endBloco);
+    if (idx != -1) {
+        return tratarHitCache(mmu->c1,idx,offset,isEscrita,valorEscrita,&mmu->hitsC1,CUSTO_C1,mmu
+        );
     }
+
     mmu->missesC1++;
     
     // C2
     idx = buscarNaCache(mmu->c2, mmu->tamC2, endBloco);
-    if(idx != -1) { //cache hit na c2
-        mmu->hitsC2++; mmu->custoTotal += 10;
-        mmu->c2[idx].contadorUso = mmu->relogioLRU;
-        
+    if (idx != -1) {
+        int valor = tratarHitCache(mmu->c2,idx,offset,isEscrita,valorEscrita,&mmu->hitsC2,CUSTO_C2,mmu);
+
         // Sobe o bloco encontrado da C2 para a C1 (aplicando LRU caso a C1 esteja cheia)
-        levarParaCache(mmu->c1, mmu->tamC1, &mmu->c2[idx], ram->blocos, mmu->relogioLRU);
-        
-        if(isEscrita) { 
-            mmu->c2[idx].palavras[offset] = valorEscrita; 
-            mmu->c2[idx].atualizado = true; }
-        return mmu->c2[idx].palavras[offset];
+        levarParaCache(mmu->c1, mmu->tamC1, &mmu->c2[idx], ram->blocos, mmu->relogioLRU, "C1");
+        return valor;
     }
     mmu->missesC2++;
     
     // C3
     idx = buscarNaCache(mmu->c3, mmu->tamC3, endBloco);
     if(idx != -1) {//cache hit na c3
-        mmu->hitsC3++; mmu->custoTotal += 100;
-        mmu->c3[idx].contadorUso = mmu->relogioLRU;
+        int valor = tratarHitCache(mmu->c3,idx,offset,isEscrita,valorEscrita,&mmu->hitsC3,CUSTO_C3,mmu);
 
         // Sobe o bloco da C3 replicando-o tanto na C2 quanto na C1
-        levarParaCache(mmu->c2, mmu->tamC2, &mmu->c3[idx], ram->blocos, mmu->relogioLRU);
-        levarParaCache(mmu->c1, mmu->tamC1, &mmu->c3[idx], ram->blocos, mmu->relogioLRU);
+        levarParaCache(mmu->c2, mmu->tamC2, &mmu->c3[idx], ram->blocos, mmu->relogioLRU,"C2");
+        levarParaCache(mmu->c1, mmu->tamC1, &mmu->c3[idx], ram->blocos, mmu->relogioLRU,"C1");
         
-        if(isEscrita) { 
-            mmu->c3[idx].palavras[offset] = valorEscrita; 
-            mmu->c3[idx].atualizado = true; }
-        return mmu->c3[idx].palavras[offset];
+        return valor;
     }
     mmu->missesC3++;
     
     // RAM
-    mmu->acessosRAM++; mmu->custoTotal += 1000;
+    mmu->acessosRAM++; mmu->custoTotal += CUSTO_RAM;
     BlocoMemoria* blocoRAM = &ram->blocos[endBloco];
     if(isEscrita) { blocoRAM->palavras[offset] = valorEscrita; blocoRAM->atualizado = true; }
     
 
     //traz o bloco descoberto da RAM e preenche em cascata 
-    levarParaCache(mmu->c3, mmu->tamC3, blocoRAM, ram->blocos, mmu->relogioLRU);
-    levarParaCache(mmu->c2, mmu->tamC2, blocoRAM, ram->blocos, mmu->relogioLRU);
-    levarParaCache(mmu->c1, mmu->tamC1, blocoRAM, ram->blocos, mmu->relogioLRU);
+    levarParaCache(mmu->c3, mmu->tamC3, blocoRAM, ram->blocos, mmu->relogioLRU,"C3");
+    levarParaCache(mmu->c2, mmu->tamC2, blocoRAM, ram->blocos, mmu->relogioLRU,"C2");
+    levarParaCache(mmu->c1, mmu->tamC1, blocoRAM, ram->blocos, mmu->relogioLRU,"C1");
     
     return blocoRAM->palavras[offset];//devolve o dado para os registradores da CPU
 }
 
-void imprimirEstatisticas(MMU* mmu) {
+void imprimirEstatisticas(MMU* mmu, int maquina) {
     // Soma quantos acessos passaram por cada nivel para servir de divisor 
     int t1 = mmu->hitsC1 + mmu->missesC1;
     int t2 = mmu->hitsC2 + mmu->missesC2;
@@ -159,6 +166,10 @@ void imprimirEstatisticas(MMU* mmu) {
     double porcC1 = 0.0;
     double porcC2 = 0.0;
     double porcC3 = 0.0;
+
+    double missC1 = 0.0;
+    double missC2 = 0.0;
+    double missC3 = 0.0;
     
     if (t1 > 0) {
         porcC1 = ((double)mmu->hitsC1 / t1) * 100;
@@ -172,6 +183,33 @@ void imprimirEstatisticas(MMU* mmu) {
         porcC3 = ((double)mmu->hitsC3 / t3) * 100;
     }
     
-    printf("| C1 Hit: %6.2f%% | C2 Hit: %6.2f%% | C3 Hit: %6.2f%% | RAM Acc: %4d | Custo: %7d |\n",
-           porcC1, porcC2, porcC3, mmu->acessosRAM, mmu->custoTotal);
+    if (t1 > 0) {
+    missC1 = ((double)mmu->missesC1 / t1) * 100;
+    }
+
+    if (t2 > 0) {
+        missC2 = ((double)mmu->missesC2 / t2) * 100;
+    }
+
+    if (t3 > 0) {
+        missC3 = ((double)mmu->missesC3 / t3) * 100;
+    }
+    printf("\n==================================== Máquina M%d ====================================\n", maquina);
+    printf(" C1  C2  C3 | Hit C1 | Miss C1 | Hit C2 | Miss C2 | Hit C3 | Miss C3 | RAM Acc | Custo\n");
+    printf("-----------------------------------------------------------------------------------------------\n");
+
+    printf("%3d %3d %3d | %6.2f%% | %7.2f%% | %6.2f%% | %7.2f%% | %6.2f%% | %7.2f%% | %4d | %7d\n",
+        mmu->tamC1,
+        mmu->tamC2,
+        mmu->tamC3,
+        porcC1,
+        missC1,
+        porcC2,
+        missC2,
+        porcC3,
+        missC3,
+        mmu->acessosRAM,
+        mmu->custoTotal);
+
+    printf("===============================================================================================\n");
 }

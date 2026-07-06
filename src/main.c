@@ -4,7 +4,7 @@
 #include "../include/cpu.h"
 #include "../include/ram.h"
 #include "../include/mmu.h"
-
+#include "../include/config.h"
 
 Instrucao* lerProgramaDoArquivo(const char* nomeArquivo, int *tamPrograma) {
     FILE *arquivo = fopen(nomeArquivo, "r");
@@ -13,7 +13,7 @@ Instrucao* lerProgramaDoArquivo(const char* nomeArquivo, int *tamPrograma) {
         exit(1);
     }
 
-    int qtdInstrucoes = 10000; 
+    int qtdInstrucoes = QTD_INSTRUCOES; 
     Instrucao *programa = (Instrucao*) malloc(sizeof(Instrucao) * qtdInstrucoes);
     
     int i = 0;
@@ -35,21 +35,21 @@ Instrucao* lerProgramaDoArquivo(const char* nomeArquivo, int *tamPrograma) {
 }
 
 void rodarSimulacaoDoArquivo(const char* nomeArquivo) {
-    int tamanhoRAM = 1024; 
+    int tamanhoRAM = TAMANHO_RAM; 
     int tamPrograma = 0;
 
     Instrucao *programaInstrucoes = lerProgramaDoArquivo(nomeArquivo, &tamPrograma);
 
     int maquinas[5][3] = {
-        {8, 16, 32},    // M1
-        {32, 64, 128},  // M2
-        {16, 64, 256},  // M3
-        {8, 32, 128},   // M4
-        {16, 32, 64}    // M5
+        {M1_C1, M1_C2, M1_C3},
+        {M2_C1, M2_C2, M2_C3},
+        {M3_C1, M3_C2, M3_C3},
+        {M4_C1, M4_C2, M4_C3},
+        {M5_C1, M5_C2, M5_C3}
     };
 
-   
-    for(int i = 0; i < 1; i++) {
+   //rodar  a quantd de maquinas 
+    for(int i = 1; i < 2; i++) {
         RAM ram;
         criarRAMVazia(&ram, tamanhoRAM);
         
@@ -60,20 +60,19 @@ void rodarSimulacaoDoArquivo(const char* nomeArquivo) {
         
         executarCPU(&cpu, &ram, mmu);
         
-        printf("Maquina M%d ", i + 1);
-        imprimirEstatisticas(mmu);
+        imprimirEstatisticas(mmu, i +1);
 
         liberarMMU(mmu);
         destruirRAM(&ram);
     }
-    printf("=================================================================================\n");
+    
 
     free(programaInstrucoes);
 }
 
 int main() {
     
-    rodarSimulacaoDoArquivo("instructions2.txt");
+    rodarSimulacaoDoArquivo(ARQUIVO_INSTRUCOES);
 
     return 0;
 }
