@@ -2,11 +2,17 @@
 
 Este projeto consiste em um simulador de arquitetura de computadores focado no gerenciamento da hierarquia de memória. O sistema simula o comportamento de uma CPU integrada a uma Unidade de Gerenciamento de Memória (MMU) operando em cascata através de três níveis de memória cache ($C1$, $C2$, $C3$) e uma Memória RAM física principal.
 
-## 🚀 Funcionalidades e Características
+## 🚀 Funcionalidades
 
-* **Hierarquia de Memória em Cascata**: Busca de dados sequencial e dinâmica ($C1 \rightarrow C2 \rightarrow C3 \rightarrow \text{RAM}$).
-* **Algoritmo de Substituição LRU (Least Recently Used)**: Substituição baseada no tempo de uso recente controlado por um relógio lógico interno para determinar qual bloco deve ser mapeado para as camadas superiores.
-* **Mapeamento Totalmente Associativo**: Flexibilidade total no posicionamento de blocos de palavras dentro das linhas de cache, maximizando o aproveitamento do espaço.
+- Busca em cascata entre C1 → C2 → C3 → RAM.
+- Política de substituição LRU (Least Recently Used).
+- Política de escrita Write-Back.
+- Mapeamento totalmente associativo.
+- Geração automática de programas de teste através do gerador de instruções.
+- Estatísticas de execução contendo:
+  - Hit e Miss das caches;
+  - Número de acessos à RAM;
+  - Custo total da execução.
 
 ---
 
@@ -28,20 +34,35 @@ O simulador testa o comportamento do ecossistema de memória sob diferentes conf
 
 Abaixo estão consolidadas as métricas obtidas na execução do programa de testes em todas as configurações de hardware disponíveis para o ambiente sem armazenamento em disco (HD).
 
-| Configuração | Hit C1 | Hit C2 | Hit C3 | Acessos RAM (RAM Acc) | Custo Total (Ciclos) |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| **M1** | 0.90% | 76.97% | 30.78% | 3.420 | 3.737.474 |
-| **M2** | 86.71% | 19.01% | 34.59% | 1.524 | 1.628.846 |
-| **M3** | 77.26% | 49.72% | 89.90% | 250 | **513.809** |
-| **M4** | 0.90% | 86.59% | 47.27% | 1.517 | 1.839.014 |
-| **M5** | 77.26% | 30.63% | 21.69% | 2.675 | 2.780.909 |
+## 📊 Resultados Obtidos
 
-> 💡 **Análise dos Resultados**: 
-> * A **Máquina M3** consagrou-se como a mais eficiente do pipeline, atingindo uma espetacular taxa de **89.90% de acertos na Cache C3**, o que minimizou os acessos à memória RAM principal para apenas 250 repetições e derrubou o custo operacional para apenas 513.809 ciclos.
-> * A **Máquina M2** obteve o maior índice de filtragem imediata no primeiro nível ($C1$), absorvendo **86.71%** dos pedidos de dados direto na camada de maior velocidade de barramento.
+| Máquina | C1 | C2 | C3 | Hit C1 | Miss C1 | Hit C2 | Miss C2 | Hit C3 | Miss C3 | RAM Acc | Custo Total |
+|:------:|:--:|:--:|:--:|-------:|--------:|-------:|--------:|-------:|--------:|--------:|------------:|
+| **M1** | 8 | 16 | 32 | 0.90% | 99.10% | 76.97% | 23.03% | 30.78% | 69.22% | 3.420 | 3.737.474 |
+| **M2** | 32 | 64 | 128 | 86.71% | 13.29% | 19.01% | 80.99% | 34.59% | 65.41% | 1.524 | 1.628.846 |
+| **M3** | 16 | 64 | 256 | 77.26% | 22.74% | 49.72% | 50.28% | 89.90% | 10.10% | 250 | **513.809** |
+| **M4** | 8 | 32 | 128 | 0.90% | 99.10% | 86.59% | 13.41% | 47.27% | 52.73% | 1.517 | 1.839.014 |
+| **M5** | 16 | 32 | 64 | 77.26% | 22.74% | 30.63% | 69.37% | 21.69% | 78.31% | 2.675 | 2.780.909 |
+
+## 📈 Análise dos Resultados
+
+Os testes mostraram diferenças significativas entre as configurações de cache.
+
+- A Máquina M3 apresentou o menor custo total de execução, consequência da alta taxa de acertos nas caches e da redução dos acessos à memória RAM.
+
+- A Máquina M2 apresentou a maior taxa de acertos na cache C1, reduzindo significativamente o tempo médio de acesso aos dados.
+---
+## 🧠 Políticas Implementadas
+
+### LRU (Least Recently Used)
+
+Quando uma cache está cheia e um novo bloco precisa ser inserido, o algoritmo LRU seleciona o bloco menos recentemente utilizado para substituição.
+
+### Write-Back
+
+Caso o bloco escolhido pelo LRU tenha sido modificado, ele é gravado novamente na memória RAM antes da substituição, evitando perda de dados.
 
 ---
-
 ## 📁 Estrutura do Projeto
 
 ```text
