@@ -74,7 +74,7 @@ static void levarParaCache(BlocoMemoria* cache, int tamanho, BlocoMemoria* bloco
             lruIdx = i;//guarda o indice que sera expulsa
         }
     }
-    printf("[LRU] %s cheia! Removendo bloco %d.\n",nomeCache, cache[lruIdx].endBloco);
+    //printf("[LRU] %s cheia! Removendo bloco %d.\n",nomeCache, cache[lruIdx].endBloco);
 
     //WRITE-BACK
     //teste antes de jogar no lixo
@@ -83,7 +83,7 @@ static void levarParaCache(BlocoMemoria* cache, int tamanho, BlocoMemoria* bloco
         ram[cache[lruIdx].endBloco].atualizado = false;
     }
 
-    printf("[WRITE-BACK] Gravando bloco %d da %s na RAM.\n",cache[lruIdx].endBloco, nomeCache);
+    //printf("[WRITE-BACK] Gravando bloco %d da %s na RAM.\n",cache[lruIdx].endBloco, nomeCache);
 
     copiarBloco(blocoSubindo, &cache[lruIdx]);
     cache[lruIdx].contadorUso = relogio;
