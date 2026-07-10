@@ -51,6 +51,8 @@ Os testes mostraram diferenças significativas entre as configurações de cache
 - A Máquina M3 apresentou o menor custo total de execução, consequência da alta taxa de acertos nas caches e da redução dos acessos à memória RAM.
 
 - A Máquina M2 apresentou a maior taxa de acertos na cache C1, reduzindo significativamente o tempo médio de acesso aos dados.
+
+- **Máquina M1:** apresentou o **pior desempenho**, pois possui as menores caches (**C1 = 8, C2 = 16 e C3 = 32**), resultando em **mais Misses**, **3.420 acessos à RAM** e o **maior custo total (3.737.474)**.
 ---
 ## 🧠 Políticas Implementadas
 
