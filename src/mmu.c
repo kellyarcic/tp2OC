@@ -110,51 +110,84 @@ int buscarNasMemorias(MMU* mmu, int enderecoGlobal, bool isEscrita, int valorEsc
 
     mmu->relogioLRU++;
     
-    // C1
+    //C1 
     idx = buscarNaCache(mmu->c1, mmu->tamC1, endBloco);
     if (idx != -1) {
-        return tratarHitCache(mmu->c1,idx,offset,isEscrita,valorEscrita,&mmu->hitsC1,CUSTO_C1,mmu
-        );
+        return tratarHitCache(mmu->c1, idx, offset, isEscrita, valorEscrita, &mmu->hitsC1, CUSTO_C1, mmu);
     }
-
     mmu->missesC1++;
     
-    // C2
+    //C2 
     idx = buscarNaCache(mmu->c2, mmu->tamC2, endBloco);
     if (idx != -1) {
-        int valor = tratarHitCache(mmu->c2,idx,offset,isEscrita,valorEscrita,&mmu->hitsC2,CUSTO_C2,mmu);
+        int valor = tratarHitCache(mmu->c2, idx, offset, isEscrita, valorEscrita, &mmu->hitsC2, CUSTO_C2, mmu);
 
-        // Sobe o bloco encontrado da C2 para a C1 (aplicando LRU caso a C1 esteja cheia)
+        // Sobe o bloco encontrado da C2 para a C1
         levarParaCache(mmu->c1, mmu->tamC1, &mmu->c2[idx], ram->blocos, mmu->relogioLRU, "C1");
+    
+        //Apaga o dado da C2 para ele não ficar multiplicado (já que agora está na C1)
+        mmu->c2[idx].endBloco = -1; 
+        mmu->c2[idx].atualizado = false;
+
         return valor;
     }
     mmu->missesC2++;
     
-    // C3
+    //  C3
     idx = buscarNaCache(mmu->c3, mmu->tamC3, endBloco);
-    if(idx != -1) {//cache hit na c3
-        int valor = tratarHitCache(mmu->c3,idx,offset,isEscrita,valorEscrita,&mmu->hitsC3,CUSTO_C3,mmu);
+    if(idx != -1) { // Cache Hit na C3
+        int valor = tratarHitCache(mmu->c3, idx, offset, isEscrita, valorEscrita, &mmu->hitsC3, CUSTO_C3, mmu);
 
-        // Sobe o bloco da C3 replicando-o tanto na C2 quanto na C1
-        levarParaCache(mmu->c2, mmu->tamC2, &mmu->c3[idx], ram->blocos, mmu->relogioLRU,"C2");
-        levarParaCache(mmu->c1, mmu->tamC1, &mmu->c3[idx], ram->blocos, mmu->relogioLRU,"C1");
+        //Passa o dado primeiro para a Cache 2 (simulando o caminho e testando o LRU da C2)
+        levarParaCache(mmu->c2, mmu->tamC2, &mmu->c3[idx], ram->blocos, mmu->relogioLRU, "C2");
+        //Depois passa o dado para a Cache 1 (destino final perto da CPU)
+        levarParaCache(mmu->c1, mmu->tamC1, &mmu->c3[idx], ram->blocos, mmu->relogioLRU, "C1");
+        
+        //Apaga das caches inferiores para sumir com a multiplicação do dado
+        // Remove da C3 original
+        mmu->c3[idx].endBloco = -1;
+        mmu->c3[idx].atualizado = false;
+        
+        // Remove da C2
+        int idxC2 = buscarNaCache(mmu->c2, mmu->tamC2, endBloco);
+        if (idxC2 != -1) {
+            mmu->c2[idxC2].endBloco = -1;
+            mmu->c2[idxC2].atualizado = false;
+        }
         
         return valor;
     }
     mmu->missesC3++;
     
-    // RAM
-    mmu->acessosRAM++; mmu->custoTotal += CUSTO_RAM;
+    mmu->acessosRAM++; 
+    mmu->custoTotal += CUSTO_RAM;
     BlocoMemoria* blocoRAM = &ram->blocos[endBloco];
-    if(isEscrita) { blocoRAM->palavras[offset] = valorEscrita; blocoRAM->atualizado = true; }
     
-
-    //traz o bloco descoberto da RAM e preenche em cascata 
-    levarParaCache(mmu->c3, mmu->tamC3, blocoRAM, ram->blocos, mmu->relogioLRU,"C3");
-    levarParaCache(mmu->c2, mmu->tamC2, blocoRAM, ram->blocos, mmu->relogioLRU,"C2");
-    levarParaCache(mmu->c1, mmu->tamC1, blocoRAM, ram->blocos, mmu->relogioLRU,"C1");
+    if(isEscrita) { 
+        blocoRAM->palavras[offset] = valorEscrita; 
+        blocoRAM->atualizado = true; 
+    }
     
-    return blocoRAM->palavras[offset];//devolve o dado para os registradores da CPU
+    // Faz o dado subir sequencialmente da RAM passando por todo o caminho até a C1
+    levarParaCache(mmu->c3, mmu->tamC3, blocoRAM, ram->blocos, mmu->relogioLRU, "C3");
+    levarParaCache(mmu->c2, mmu->tamC2, blocoRAM, ram->blocos, mmu->relogioLRU, "C2");
+    levarParaCache(mmu->c1, mmu->tamC1, blocoRAM, ram->blocos, mmu->relogioLRU, "C1");
+    
+    // Como o bloco da RAM subiu todo o caminho e agora está na C1,
+    // limpamos os estágios intermediários (C3 e C2) para manter a propriedade exclusiva
+    int idxC3 = buscarNaCache(mmu->c3, mmu->tamC3, endBloco);
+    if (idxC3 != -1) {
+        mmu->c3[idxC3].endBloco = -1;
+        mmu->c3[idxC3].atualizado = false;
+    }
+    
+    int idxC2 = buscarNaCache(mmu->c2, mmu->tamC2, endBloco);
+    if (idxC2 != -1) {
+        mmu->c2[idxC2].endBloco = -1;
+        mmu->c2[idxC2].atualizado = false;
+    }
+    
+    return blocoRAM->palavras[offset];
 }
 
 void imprimirEstatisticas(MMU* mmu, int maquina) {
