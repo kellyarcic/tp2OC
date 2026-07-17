@@ -36,24 +36,25 @@ Abaixo estão consolidadas as métricas obtidas na execução do programa de tes
 
 ## 📊 Resultados Obtidos
 
-| Máquina | C1 | C2 | C3 | Hit C1 | Miss C1 | Hit C2 | Miss C2 | Hit C3 | Miss C3 | RAM Acc | Custo Total |
-|:------:|:--:|:--:|:--:|-------:|--------:|-------:|--------:|-------:|--------:|--------:|------------:|
-| **M1** | 8 | 16 | 32 | 0.90% | 99.10% | 76.97% | 23.03% | 30.78% | 69.22% | 3.420 | 3.737.474 |
-| **M2** | 32 | 64 | 128 | 86.71% | 13.29% | 19.01% | 80.99% | 34.59% | 65.41% | 1.524 | 1.628.846 |
-| **M3** | 16 | 64 | 256 | 77.26% | 22.74% | 49.72% | 50.28% | 89.90% | 10.10% | 250 | **513.809** |
-| **M4** | 8 | 32 | 128 | 0.90% | 99.10% | 86.59% | 13.41% | 47.27% | 52.73% | 1.517 | 1.839.014 |
-| **M5** | 16 | 32 | 64 | 77.26% | 22.74% | 30.63% | 69.37% | 21.69% | 78.31% | 2.675 | 2.780.909 |
+| Máquina | C1 | C2 |  C3 |     Hit C1 | Miss C1 |     Hit C2 | Miss C2 |     Hit C3 | Miss C3 | RAM Acc |      Custo |
+| ------: | -: | -: | --: | ---------: | ------: | ---------: | ------: | ---------: | ------: | ------: | ---------: |
+|      M1 |  8 | 16 |  32 |      0.90% |  99.10% |     85.70% |  14.30% |     16.78% |  83.22% |    2554 |    2.789.594 |
+|      M2 | 32 | 64 | 128 |     86.71% |  13.29% |     28.92% |  71.08% |     76.77% |  23.23% |     475 |     659.096 |
+|      M3 | 16 | 64 | 256 | **77.26%** |  22.74% | **53.86%** |  46.14% | **89.00%** |  11.00% | **250** | **495.449** |
+|      M4 |  8 | 32 | 128 |      0.90% |  99.10% |     87.00% |  13.00% |     57.60% |  42.40% |    1183 |    1.530.584 |
+|      M5 | 16 | 32 |  64 |     77.26% |  22.74% |     45.78% |  54.22% |     30.94% |  69.06% |    1844 |    1.965.869 |
+
 
 ## 📈 Análise dos Resultados
 
-Os testes mostraram diferenças significativas entre as configurações de cache.
+Os experimentos mostram que o desempenho do simulador depende diretamente da configuração das memórias cache. Configurações com maior capacidade nos níveis superiores reduzem a quantidade de acessos à memória principal, diminuindo o custo total de execução.
 
-- A Máquina M3 apresentou o menor custo total de execução, consequência da alta taxa de acertos nas caches e da redução dos acessos à memória RAM.
-
-- A Máquina M2 apresentou a maior taxa de acertos na cache C1, reduzindo significativamente o tempo médio de acesso aos dados.
-
-- **Máquina M1:** apresentou o **pior desempenho**, pois possui as menores caches (**C1 = 8, C2 = 16 e C3 = 32**), resultando em **mais Misses**, **3.420 acessos à RAM** e o **maior custo total (3.737.474)**.
----
+- Máquina M3: apresentou o melhor desempenho geral, obtendo o menor custo total (495.449) e apenas 250 acessos à RAM, resultado da elevada taxa de acertos nas caches, principalmente na C3.
+- Máquina M2: apresentou a maior taxa de acertos na C1 (86,71%), reduzindo significativamente o tempo médio de acesso aos dados e alcançando o segundo melhor desempenho geral.
+- Máquina M4: apresentou desempenho intermediário. Apesar da baixa taxa de acertos na C1, obteve excelentes taxas de acerto em C2 e C3, reduzindo os acessos à RAM em relação à M1.
+- Máquina M5: com a política de cache exclusiva, apresentou melhora nas taxas de acerto da C2 e da C3 e redução dos acessos à RAM em comparação com a implementação inclusiva, diminuindo também o custo total de execução.
+- Máquina M1: apresentou o pior desempenho, pois possui as menores capacidades de cache (C1 = 8, C2 = 16 e C3 = 32), ocasionando maior quantidade de faltas (misses), 2.554 acessos à RAM e o maior custo entre as configurações avaliadas.
+-------
 ## 🧠 Políticas Implementadas
 
 ### LRU (Least Recently Used)
