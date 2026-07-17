@@ -49,7 +49,9 @@ void rodarSimulacaoDoArquivo(const char* nomeArquivo) {
     };
 
    //rodar  a quantd de maquinas 
-    for(int i = 1; i < 2; i++) {
+    for(int i = 0; i < 5; i++) {
+        printf("\n----------------------\n");
+        printf("Iniciando M%d\n",i+1);
         RAM ram;
         criarRAMVazia(&ram, tamanhoRAM);
         
@@ -58,9 +60,13 @@ void rodarSimulacaoDoArquivo(const char* nomeArquivo) {
         CPU cpu;
         carregarPrograma(&cpu, programaInstrucoes, tamPrograma);
         
+        clock_t inicio = clock();
         executarCPU(&cpu, &ram, mmu);
+        clock_t fim = clock();
+        double tempoExecucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
+        printf("Estatisticas M%d\n",i+1);
         
-        imprimirEstatisticas(mmu, i +1);
+        imprimirEstatisticas(mmu, i +1, tempoExecucao);
 
         liberarMMU(mmu);
         destruirRAM(&ram);

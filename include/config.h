@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define DEBUG_CPU 0
+
 //config do simulador e do gerador
 #define QTD_INSTRUCOES        10000 
 #define ARQUIVO_INSTRUCOES    "instructions2.txt"
@@ -29,8 +31,8 @@
 #define M4_C2 32
 #define M4_C3 128
 
-#define M5_C1 16
-#define M5_C2 32
-#define M5_C3 64
+#define M5_C1 64
+#define M5_C2 128
+#define M5_C3 256
 
 #endif
