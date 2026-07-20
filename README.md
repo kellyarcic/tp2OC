@@ -97,3 +97,6 @@ git push origin main
 
 gcc src/main.c src/mmu.c src/ram.c src/cpu.c -I include -o tp2
 ./tp2
+
+gcc instructionsGenerator.c -o gerador
+./gerador
